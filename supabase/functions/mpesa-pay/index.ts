@@ -151,10 +151,10 @@ async function handleInitiate(req: Request) {
   }
 
   const body = await req.json();
-  const { courseId, courseCode, amount, currency, phone, paymentId, studentId } = body;
+  const { courseCode, amount, currency, phone, paymentId } = body;
 
   // Validate required fields
-  if (!courseId || !amount || !phone || !paymentId || !studentId) {
+  if (!courseCode || !amount || !phone || !paymentId) {
     return new Response(JSON.stringify({ error: 'Missing required fields' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -197,8 +197,8 @@ async function handleInitiate(req: Request) {
       PartyB: MPESA_SHORTCODE,
       PhoneNumber: normalizedPhone,
       CallBackURL: MPESA_CALLBACK_URL || 'https://example.com/callback',
-      AccountReference: courseCode || courseId,
-      TransactionDesc: `Course payment: ${courseCode || courseId}`,
+      AccountReference: courseCode,
+      TransactionDesc: `Course payment: ${courseCode}`,
     }),
   });
 
@@ -312,4 +312,5 @@ async function handleCallback(req: Request) {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 }
+
 

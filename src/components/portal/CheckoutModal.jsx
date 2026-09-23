@@ -8,7 +8,7 @@ import {
   createPaypalOrder,
   capturePaypalOrder,
 } from '../../lib/supabase/payments';
-import { parseFee } from '../../lib/data/programmeData';
+import { getCoursePrice } from '../../lib/data/coursePricing';
 
 /**
  * CheckoutModal — payment flow for paid courses.
@@ -26,8 +26,7 @@ export default function CheckoutModal({ course, open, onClose, onSuccess }) {
   const [errorMsg, setErrorMsg] = useState('');
   const [paypalRedirectUrl, setPaypalRedirectUrl] = useState('');
 
-  const amount = parseFee(course?.fees);
-  const currency = course?.fees?.includes('USD') || course?.fees?.includes('$') ? 'USD' : 'KES';
+  const { amount, currency } = getCoursePrice(course);
 
   function handleClose() {
     setStatus('selecting');
@@ -47,7 +46,6 @@ export default function CheckoutModal({ course, open, onClose, onSuccess }) {
     setErrorMsg('');
     try {
       const payment = await createPendingPayment({
-        courseId: course.code,
         courseCode: course.code,
         amount,
         currency: 'KES',
@@ -57,7 +55,6 @@ export default function CheckoutModal({ course, open, onClose, onSuccess }) {
 
       const result = await initiateMpesaPayment({
         paymentId: payment.id,
-        courseId: course.code,
         courseCode: course.code,
         amount,
         currency: 'KES',
@@ -81,7 +78,6 @@ export default function CheckoutModal({ course, open, onClose, onSuccess }) {
     setErrorMsg('');
     try {
       const payment = await createPendingPayment({
-        courseId: course.code,
         courseCode: course.code,
         amount,
         currency,
@@ -90,7 +86,6 @@ export default function CheckoutModal({ course, open, onClose, onSuccess }) {
 
       const result = await createPaypalOrder({
         paymentId: payment.id,
-        courseId: course.code,
         courseCode: course.code,
         amount,
         currency,
@@ -114,7 +109,6 @@ export default function CheckoutModal({ course, open, onClose, onSuccess }) {
     setErrorMsg('');
     try {
       const payment = await createPendingPayment({
-        courseId: course.code,
         courseCode: course.code,
         amount,
         currency,

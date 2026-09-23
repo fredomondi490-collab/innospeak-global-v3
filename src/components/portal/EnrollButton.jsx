@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { GraduationCap, CircleCheck, LogIn, TriangleAlert, CreditCard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getEnrollmentByCode, enrollInCourse } from '../../lib/supabase/portal';
-import { parseFee } from '../../lib/data/programmeData';
+import { getCoursePrice } from '../../lib/data/coursePricing';
 import { checkCoursePaid } from '../../lib/supabase/payments';
 import CheckoutModal from './CheckoutModal';
 
@@ -28,8 +28,8 @@ export default function EnrollButton({ course }) {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
 
-  const coursePrice = parseFee(course?.fees);
-  const isPaid = coursePrice > 0;
+  const { amount: coursePrice, currency, isFree } = getCoursePrice(course);
+  const isPaid = !isFree && coursePrice > 0;
 
   useEffect(() => {
     if (!user) {
@@ -139,7 +139,7 @@ export default function EnrollButton({ course }) {
             className="btn-gold w-full max-w-xs"
           >
             <CreditCard size={15} className="mr-2" />
-            Enroll for {course.fees}
+            Enroll for {currency} {coursePrice.toLocaleString()}
           </motion.button>
           <CheckoutModal
             course={course}

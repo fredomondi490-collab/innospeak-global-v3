@@ -19,7 +19,7 @@ function assertConfigured() {
  * Create a pending payment record in the database.
  * The edge function will update it after provider confirmation.
  */
-export async function createPendingPayment({ courseId, courseCode, amount, currency, provider, phone }) {
+export async function createPendingPayment({ courseCode, amount, currency, provider, phone }) {
   assertConfigured();
   const { data: authData } = await supabase.auth.getUser();
   const uid = authData?.user?.id;
@@ -30,7 +30,7 @@ export async function createPendingPayment({ courseId, courseCode, amount, curre
     .insert([
       {
         student_id: uid,
-        course_id: courseId,
+        course_id: courseCode,
         course_code: courseCode,
         amount,
         currency,
@@ -55,13 +55,11 @@ export async function createPendingPayment({ courseId, courseCode, amount, curre
 /**
  * Initiate M-PESA STK Push via edge function.
  */
-export async function initiateMpesaPayment({ paymentId, courseId, courseCode, amount, currency, phone }) {
+export async function initiateMpesaPayment({ paymentId, courseCode, amount, currency, phone }) {
   assertConfigured();
   const { data, error } = await supabase.functions.invoke('mpesa-pay', {
     body: {
-      action: 'initiate',
       paymentId,
-      courseId,
       courseCode,
       amount,
       currency,
@@ -77,13 +75,12 @@ export async function initiateMpesaPayment({ paymentId, courseId, courseCode, am
  * Create a PayPal order via edge function.
  * Returns { orderId, approvalUrl }.
  */
-export async function createPaypalOrder({ paymentId, courseId, courseCode, amount, currency }) {
+export async function createPaypalOrder({ paymentId, courseCode, amount, currency }) {
   assertConfigured();
   const { data, error } = await supabase.functions.invoke('paypal-pay', {
     body: {
       action: 'create-order',
       paymentId,
-      courseId,
       courseCode,
       amount,
       currency,
@@ -127,12 +124,12 @@ export async function listMyPayments() {
 /**
  * Check if a student has a paid payment for a course.
  */
-export async function checkCoursePaid(courseId) {
+export async function checkCoursePaid(courseCode) {
   assertConfigured();
   const { data, error } = await supabase
     .from('payments')
     .select('id, status')
-    .eq('course_id', courseId)
+    .eq('course_code', courseCode)
     .eq('status', 'paid')
     .maybeSingle();
   if (error) throw error;

@@ -128,9 +128,9 @@ async function handleCreateOrder(req: Request) {
   }
 
   const body = await req.json();
-  const { courseId, courseCode, amount, currency, paymentId } = body;
+  const { courseCode, amount, currency, paymentId } = body;
 
-  if (!courseId || !amount || !paymentId) {
+  if (!courseCode || !amount || !paymentId) {
     return new Response(JSON.stringify({ error: 'Missing required fields' }), {
       status: 400,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -150,7 +150,7 @@ async function handleCreateOrder(req: Request) {
       purchase_units: [
         {
           reference_id: paymentId,
-          description: `Course: ${courseCode || courseId}`,
+          description: `Course: ${courseCode}`,
           amount: {
             currency_code: currency || 'USD',
             value: Number(amount).toFixed(2),
@@ -268,4 +268,5 @@ async function handleCapture(req: Request) {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   });
 }
+
 
